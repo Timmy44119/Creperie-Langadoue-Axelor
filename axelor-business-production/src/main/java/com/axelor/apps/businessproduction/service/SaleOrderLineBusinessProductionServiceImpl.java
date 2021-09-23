@@ -17,13 +17,53 @@
  */
 package com.axelor.apps.businessproduction.service;
 
+import com.axelor.apps.account.service.AnalyticMoveLineService;
+import com.axelor.apps.account.service.app.AppAccountService;
+import com.axelor.apps.account.service.config.AccountConfigService;
+import com.axelor.apps.base.service.CurrencyService;
+import com.axelor.apps.base.service.PriceListService;
+import com.axelor.apps.base.service.ProductMultipleQtyService;
+import com.axelor.apps.base.service.app.AppBaseService;
+import com.axelor.apps.base.service.tax.AccountManagementService;
 import com.axelor.apps.businessproject.service.SaleOrderLineProjectServiceImpl;
 import com.axelor.apps.sale.db.PackLine;
 import com.axelor.apps.sale.db.SaleOrder;
 import com.axelor.apps.sale.db.SaleOrderLine;
+import com.axelor.apps.sale.db.repo.SaleOrderLineRepository;
+import com.axelor.apps.sale.service.app.AppSaleService;
+import com.axelor.apps.supplychain.service.app.AppSupplychainService;
+import com.axelor.exception.AxelorException;
+import com.google.inject.Inject;
 import java.math.BigDecimal;
 
 public class SaleOrderLineBusinessProductionServiceImpl extends SaleOrderLineProjectServiceImpl {
+
+  @Inject
+  public SaleOrderLineBusinessProductionServiceImpl(
+      CurrencyService currencyService,
+      PriceListService priceListService,
+      ProductMultipleQtyService productMultipleQtyService,
+      AppBaseService appBaseService,
+      AppSaleService appSaleService,
+      AccountManagementService accountManagementService,
+      SaleOrderLineRepository saleOrderLineRepo,
+      AppAccountService appAccountService,
+      AnalyticMoveLineService analyticMoveLineService,
+      AppSupplychainService appSupplychainService,
+      AccountConfigService accountConfigService) {
+    super(
+        currencyService,
+        priceListService,
+        productMultipleQtyService,
+        appBaseService,
+        appSaleService,
+        accountManagementService,
+        saleOrderLineRepo,
+        appAccountService,
+        analyticMoveLineService,
+        appSupplychainService,
+        accountConfigService);
+  }
 
   @Override
   public SaleOrderLine createSaleOrderLine(
@@ -31,7 +71,8 @@ public class SaleOrderLineBusinessProductionServiceImpl extends SaleOrderLinePro
       SaleOrder saleOrder,
       BigDecimal packQty,
       BigDecimal conversionRate,
-      Integer sequence) {
+      Integer sequence)
+      throws AxelorException {
 
     SaleOrderLine soLine =
         super.createSaleOrderLine(packLine, saleOrder, packQty, conversionRate, sequence);

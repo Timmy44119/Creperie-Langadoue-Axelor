@@ -20,11 +20,16 @@ package com.axelor.apps.supplychain.service.fixedasset;
 import com.axelor.apps.account.db.FixedAsset;
 import com.axelor.apps.account.db.Invoice;
 import com.axelor.apps.account.db.repo.FixedAssetRepository;
+import com.axelor.apps.account.service.AnalyticFixedAssetService;
 import com.axelor.apps.account.service.config.AccountConfigService;
+import com.axelor.apps.account.service.fixedasset.FixedAssetDerogatoryLineService;
 import com.axelor.apps.account.service.fixedasset.FixedAssetLineComputationService;
 import com.axelor.apps.account.service.fixedasset.FixedAssetLineMoveService;
+import com.axelor.apps.account.service.fixedasset.FixedAssetLineService;
 import com.axelor.apps.account.service.fixedasset.FixedAssetServiceImpl;
+import com.axelor.apps.account.service.fixedasset.factory.FixedAssetLineServiceFactory;
 import com.axelor.apps.account.service.move.MoveLineService;
+import com.axelor.apps.base.service.administration.SequenceService;
 import com.axelor.apps.purchase.db.PurchaseOrderLine;
 import com.axelor.apps.stock.db.StockLocation;
 import com.axelor.apps.stock.db.StockMoveLine;
@@ -45,13 +50,23 @@ public class FixedAssetServiceSupplyChainImpl extends FixedAssetServiceImpl {
       FixedAssetLineMoveService fixedAssetLineMoveService,
       FixedAssetLineComputationService fixedAssetLineComputationService,
       MoveLineService moveLineService,
-      AccountConfigService accountConfigService) {
+      AccountConfigService accountConfigService,
+      FixedAssetDerogatoryLineService fixedAssetDerogatoryLineService,
+      AnalyticFixedAssetService analyticFixedAssetService,
+      SequenceService sequenceService,
+      FixedAssetLineService fixedAssetLineService,
+      FixedAssetLineServiceFactory fixedAssetLineServiceFactory) {
     super(
         fixedAssetRepo,
         fixedAssetLineMoveService,
         fixedAssetLineComputationService,
         moveLineService,
-        accountConfigService);
+        accountConfigService,
+        fixedAssetDerogatoryLineService,
+        analyticFixedAssetService,
+        sequenceService,
+        fixedAssetLineService,
+        fixedAssetLineServiceFactory);
   }
 
   @Transactional

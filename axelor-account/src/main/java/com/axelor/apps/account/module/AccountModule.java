@@ -20,6 +20,7 @@ package com.axelor.apps.account.module;
 import com.axelor.app.AxelorModule;
 import com.axelor.apps.account.db.Invoice;
 import com.axelor.apps.account.db.repo.AccountAccountRepository;
+import com.axelor.apps.account.db.repo.AccountAnalyticRulesRepository;
 import com.axelor.apps.account.db.repo.AccountRepository;
 import com.axelor.apps.account.db.repo.AccountingBatchAccountRepository;
 import com.axelor.apps.account.db.repo.AccountingBatchRepository;
@@ -27,6 +28,9 @@ import com.axelor.apps.account.db.repo.AccountingReportManagementRepository;
 import com.axelor.apps.account.db.repo.AccountingReportRepository;
 import com.axelor.apps.account.db.repo.AnalyticMoveLineMngtRepository;
 import com.axelor.apps.account.db.repo.AnalyticMoveLineRepository;
+import com.axelor.apps.account.db.repo.AnalyticRulesRepository;
+import com.axelor.apps.account.db.repo.DebtRecoveryAccountRepository;
+import com.axelor.apps.account.db.repo.DebtRecoveryRepository;
 import com.axelor.apps.account.db.repo.DepositSlipAccountRepository;
 import com.axelor.apps.account.db.repo.DepositSlipRepository;
 import com.axelor.apps.account.db.repo.FixedAssetManagementRepository;
@@ -56,11 +60,33 @@ import com.axelor.apps.account.service.AccountManagementAccountService;
 import com.axelor.apps.account.service.AccountManagementServiceAccountImpl;
 import com.axelor.apps.account.service.AccountingCloseAnnualService;
 import com.axelor.apps.account.service.AccountingCloseAnnualServiceImpl;
+import com.axelor.apps.account.service.AccountingReportDas2CheckService;
+import com.axelor.apps.account.service.AccountingReportDas2CheckServiceImpl;
+import com.axelor.apps.account.service.AccountingReportDas2Service;
+import com.axelor.apps.account.service.AccountingReportDas2ServiceImpl;
+import com.axelor.apps.account.service.AccountingReportMoveLineService;
+import com.axelor.apps.account.service.AccountingReportMoveLineServiceImpl;
+import com.axelor.apps.account.service.AccountingReportPrintService;
+import com.axelor.apps.account.service.AccountingReportPrintServiceImpl;
 import com.axelor.apps.account.service.AccountingReportService;
 import com.axelor.apps.account.service.AccountingReportServiceImpl;
+import com.axelor.apps.account.service.AccountingReportToolService;
+import com.axelor.apps.account.service.AccountingReportToolServiceImpl;
+import com.axelor.apps.account.service.AccountingReportTypeService;
+import com.axelor.apps.account.service.AccountingReportTypeServiceImpl;
 import com.axelor.apps.account.service.AccountingSituationService;
 import com.axelor.apps.account.service.AccountingSituationServiceImpl;
 import com.axelor.apps.account.service.AddressServiceAccountImpl;
+import com.axelor.apps.account.service.AnalyticAxisByCompanyService;
+import com.axelor.apps.account.service.AnalyticAxisByCompanyServiceImpl;
+import com.axelor.apps.account.service.AnalyticAxisFetchService;
+import com.axelor.apps.account.service.AnalyticAxisFetchServiceImpl;
+import com.axelor.apps.account.service.AnalyticAxisService;
+import com.axelor.apps.account.service.AnalyticAxisServiceImpl;
+import com.axelor.apps.account.service.AnalyticDistributionTemplateService;
+import com.axelor.apps.account.service.AnalyticDistributionTemplateServiceImpl;
+import com.axelor.apps.account.service.AnalyticFixedAssetService;
+import com.axelor.apps.account.service.AnalyticFixedAssetServiceImpl;
 import com.axelor.apps.account.service.AnalyticMoveLineService;
 import com.axelor.apps.account.service.AnalyticMoveLineServiceImpl;
 import com.axelor.apps.account.service.BankDetailsServiceAccountImpl;
@@ -94,10 +120,18 @@ import com.axelor.apps.account.service.app.AppAccountService;
 import com.axelor.apps.account.service.app.AppAccountServiceImpl;
 import com.axelor.apps.account.service.extract.ExtractContextMoveService;
 import com.axelor.apps.account.service.extract.ExtractContextMoveServiceImpl;
+import com.axelor.apps.account.service.fixedasset.FixedAssetDerogatoryLineMoveService;
+import com.axelor.apps.account.service.fixedasset.FixedAssetDerogatoryLineMoveServiceImpl;
+import com.axelor.apps.account.service.fixedasset.FixedAssetDerogatoryLineService;
+import com.axelor.apps.account.service.fixedasset.FixedAssetDerogatoryLineServiceImpl;
+import com.axelor.apps.account.service.fixedasset.FixedAssetFailOverControlService;
+import com.axelor.apps.account.service.fixedasset.FixedAssetFailOverControlServiceImpl;
 import com.axelor.apps.account.service.fixedasset.FixedAssetLineComputationService;
-import com.axelor.apps.account.service.fixedasset.FixedAssetLineComputationServiceImpl;
+import com.axelor.apps.account.service.fixedasset.FixedAssetLineEconomicComputationServiceImpl;
 import com.axelor.apps.account.service.fixedasset.FixedAssetLineMoveService;
 import com.axelor.apps.account.service.fixedasset.FixedAssetLineMoveServiceImpl;
+import com.axelor.apps.account.service.fixedasset.FixedAssetLineService;
+import com.axelor.apps.account.service.fixedasset.FixedAssetLineServiceImpl;
 import com.axelor.apps.account.service.fixedasset.FixedAssetService;
 import com.axelor.apps.account.service.fixedasset.FixedAssetServiceImpl;
 import com.axelor.apps.account.service.invoice.InvoiceLineService;
@@ -112,10 +146,14 @@ import com.axelor.apps.account.service.invoice.workflow.validate.WorkflowValidat
 import com.axelor.apps.account.service.invoice.workflow.validate.WorkflowValidationServiceImpl;
 import com.axelor.apps.account.service.invoice.workflow.ventilate.WorkflowVentilationService;
 import com.axelor.apps.account.service.invoice.workflow.ventilate.WorkflowVentilationServiceImpl;
+import com.axelor.apps.account.service.move.MoveCreateService;
+import com.axelor.apps.account.service.move.MoveCreateServiceImpl;
 import com.axelor.apps.account.service.move.MoveLineService;
 import com.axelor.apps.account.service.move.MoveLineServiceImpl;
 import com.axelor.apps.account.service.move.MoveService;
 import com.axelor.apps.account.service.move.MoveServiceImpl;
+import com.axelor.apps.account.service.move.PaymentMoveLineDistributionService;
+import com.axelor.apps.account.service.move.PaymentMoveLineDistributionServiceImpl;
 import com.axelor.apps.account.service.payment.PaymentModeService;
 import com.axelor.apps.account.service.payment.PaymentModeServiceImpl;
 import com.axelor.apps.account.service.payment.PaymentService;
@@ -164,6 +202,16 @@ public class AccountModule extends AxelorModule {
     bind(AccountingReportRepository.class).to(AccountingReportManagementRepository.class);
 
     bind(AccountingReportService.class).to(AccountingReportServiceImpl.class);
+
+    bind(AccountingReportDas2Service.class).to(AccountingReportDas2ServiceImpl.class);
+
+    bind(AccountingReportDas2CheckService.class).to(AccountingReportDas2CheckServiceImpl.class);
+
+    bind(AccountingReportPrintService.class).to(AccountingReportPrintServiceImpl.class);
+
+    bind(AccountingReportToolService.class).to(AccountingReportToolServiceImpl.class);
+
+    bind(AccountingReportTypeService.class).to(AccountingReportTypeServiceImpl.class);
 
     bind(JournalRepository.class).to(JournalManagementRepository.class);
 
@@ -251,7 +299,8 @@ public class AccountModule extends AxelorModule {
 
     bind(FixedAssetLineMoveService.class).to(FixedAssetLineMoveServiceImpl.class);
 
-    bind(FixedAssetLineComputationService.class).to(FixedAssetLineComputationServiceImpl.class);
+    bind(FixedAssetLineComputationService.class)
+        .to(FixedAssetLineEconomicComputationServiceImpl.class);
 
     bind(ExtractContextMoveService.class).to(ExtractContextMoveServiceImpl.class);
 
@@ -266,5 +315,37 @@ public class AccountModule extends AxelorModule {
     bind(PaymentService.class).to(PaymentServiceImpl.class);
 
     bind(MoveLineService.class).to(MoveLineServiceImpl.class);
+
+    bind(DebtRecoveryRepository.class).to(DebtRecoveryAccountRepository.class);
+
+    bind(AnalyticFixedAssetService.class).to(AnalyticFixedAssetServiceImpl.class);
+
+    bind(FixedAssetDerogatoryLineService.class).to(FixedAssetDerogatoryLineServiceImpl.class);
+
+    bind(FixedAssetDerogatoryLineMoveService.class)
+        .to(FixedAssetDerogatoryLineMoveServiceImpl.class);
+
+    bind(FixedAssetLineService.class).to(FixedAssetLineServiceImpl.class);
+
+    bind(MoveCreateService.class).to(MoveCreateServiceImpl.class);
+
+    bind(FixedAssetFailOverControlService.class).to(FixedAssetFailOverControlServiceImpl.class);
+
+    bind(AnalyticRulesRepository.class).to(AccountAnalyticRulesRepository.class);
+
+    bind(AnalyticDistributionTemplateService.class)
+        .to(AnalyticDistributionTemplateServiceImpl.class);
+
+    bind(AnalyticAxisService.class).to(AnalyticAxisServiceImpl.class);
+
+    bind(AnalyticAxisFetchService.class).to(AnalyticAxisFetchServiceImpl.class);
+
+    bind(AnalyticAxisByCompanyService.class).to(AnalyticAxisByCompanyServiceImpl.class);
+
+    bind(AccountingReportMoveLineService.class).to(AccountingReportMoveLineServiceImpl.class);
+
+    bind(PaymentMoveLineDistributionService.class).to(PaymentMoveLineDistributionServiceImpl.class);
+
+    bind(MoveCreateService.class).to(MoveCreateServiceImpl.class);
   }
 }

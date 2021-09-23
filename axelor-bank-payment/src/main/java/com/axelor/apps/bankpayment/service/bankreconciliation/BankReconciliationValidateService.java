@@ -91,8 +91,30 @@ public class BankReconciliationValidateService {
     bankReconciliation.setValidatedByUser(AuthUtils.getUser());
     bankReconciliation.setValidatedDate(
         Beans.get(AppBaseService.class).getTodayDate(bankReconciliation.getCompany()));
-
+    bankReconciliation = computeEndingBalance(bankReconciliation);
     bankReconciliationRepository.save(bankReconciliation);
+  }
+
+  protected BankReconciliation computeEndingBalance(BankReconciliation bankReconciliation) {
+    BigDecimal endingBalance = BigDecimal.ZERO;
+    BigDecimal amount = BigDecimal.ZERO;
+    endingBalance = endingBalance.add(bankReconciliation.getStartingBalance());
+    BankStatementLine bankStatementLine;
+    for (BankReconciliationLine bankReconciliationLine :
+        bankReconciliation.getBankReconciliationLineList()) {
+      amount = BigDecimal.ZERO;
+      bankStatementLine = bankReconciliationLine.getBankStatementLine();
+      if (bankStatementLine.getCredit().compareTo(BigDecimal.ZERO) != 0) {
+        amount =
+            bankStatementLine.getCredit().subtract(bankStatementLine.getAmountRemainToReconcile());
+      } else {
+        amount =
+            bankStatementLine.getAmountRemainToReconcile().subtract(bankStatementLine.getDebit());
+      }
+      endingBalance = endingBalance.add(amount);
+    }
+    bankReconciliation.setEndingBalance(endingBalance);
+    return bankReconciliation;
   }
 
   protected void validate(BankReconciliationLine bankReconciliationLine) throws AxelorException {
@@ -133,7 +155,8 @@ public class BankReconciliationValidateService {
                 partner,
                 effectDate,
                 null,
-                MoveRepository.TECHNICAL_ORIGIN_AUTOMATIC);
+                MoveRepository.TECHNICAL_ORIGIN_AUTOMATIC,
+                MoveRepository.FUNCTIONAL_ORIGIN_PAYMENT);
 
     MoveLine partnerMoveLine =
         moveLineService.createMoveLine(
@@ -169,7 +192,7 @@ public class BankReconciliationValidateService {
 
     moveService.getMoveValidateService().validate(move);
 
-    bankReconciliationLine.setMoveLine(cashMoveLine);
+    bankReconciliationLineService.reconcileBRLAndMoveLine(bankReconciliationLine, cashMoveLine);
 
     bankReconciliationLine.setIsPosted(true);
 
@@ -236,6 +259,10 @@ public class BankReconciliationValidateService {
         if (firstLine) {
           bankReconciliationLine.setDebit(debit);
           bankReconciliationLine.setCredit(credit);
+          bankReconciliationLine.setPostedNbr(bankReconciliationLine.getId().toString());
+          moveLine =
+              bankReconciliationLineService.setMoveLinePostedNbr(
+                  moveLine, bankReconciliationLine.getPostedNbr());
           bankReconciliationLine.setMoveLine(moveLine);
           firstLine = false;
         } else {

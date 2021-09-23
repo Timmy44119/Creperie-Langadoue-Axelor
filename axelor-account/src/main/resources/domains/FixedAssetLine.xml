@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <domain-models xmlns="http://axelor.com/xml/ns/domain-models"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_5.3.xsd">
+  xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_5.4.xsd">
 
   <module name="account" package="com.axelor.apps.account.db"/>
 
@@ -14,12 +14,24 @@
   	<decimal name="residualValue" title="Residual value"/>
   	<integer name="statusSelect" title="Status" selection="account.fixed.asset.line.status.select"/>
   	<many-to-one name="depreciationAccountMove" ref="com.axelor.apps.account.db.Move" title="Depreciation account move" readonly="true"/>
+  	<integer name="typeSelect" title="Type" selection="account.fixed.asset.line.type.select" default="1"/>
+  	<decimal name="grossValue" title="Gross value"/>
+  	<decimal name="depreciationBase" title="Depreciation Base"/>
+  	<decimal name="accountingValue" title="Accounting value"/>
+  	<decimal name="correctedAccountingValue" title="Corrected Accounting Value"/>
+  	<decimal name="impairmentValue" title="Impairment Value"/>
+  	<many-to-one ref="com.axelor.apps.account.db.Move" name="impairmentAccountMove" title="Impairment Account Move"/>
+
   	
   	<extra-code><![CDATA[
 	
 	   	// STATUS SELECT
 		public static final int STATUS_PLANNED = 1;
 		public static final int STATUS_REALIZED = 2;
+		
+		public static final int TYPE_SELECT_ECONOMIC = 1;
+		public static final int TYPE_SELECT_FISCAL = 2;
+		public static final int TYPE_SELECT_IFRS = 3;
 		
 	]]></extra-code>
 	

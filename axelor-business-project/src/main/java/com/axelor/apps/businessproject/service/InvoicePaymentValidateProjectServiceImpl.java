@@ -21,6 +21,7 @@ import com.axelor.apps.account.db.Invoice;
 import com.axelor.apps.account.db.InvoicePayment;
 import com.axelor.apps.account.db.repo.InvoicePaymentRepository;
 import com.axelor.apps.account.service.ReconcileService;
+import com.axelor.apps.account.service.app.AppAccountService;
 import com.axelor.apps.account.service.config.AccountConfigService;
 import com.axelor.apps.account.service.move.MoveLineService;
 import com.axelor.apps.account.service.move.MoveService;
@@ -31,9 +32,9 @@ import com.axelor.apps.bankpayment.service.bankorder.BankOrderService;
 import com.axelor.apps.bankpayment.service.invoice.payment.InvoicePaymentValidateServiceBankPayImpl;
 import com.axelor.apps.businessproject.db.InvoicingProject;
 import com.axelor.apps.businessproject.db.repo.InvoicingProjectRepository;
+import com.axelor.apps.project.db.ProjectTask;
 import com.axelor.apps.project.db.repo.ProjectRepository;
 import com.axelor.exception.AxelorException;
-import com.axelor.team.db.TeamTask;
 import com.google.inject.Inject;
 import com.google.inject.persist.Transactional;
 import java.io.IOException;
@@ -56,7 +57,8 @@ public class InvoicePaymentValidateProjectServiceImpl
       BankOrderCreateService bankOrderCreateService,
       BankOrderService bankOrderService,
       InvoicePaymentToolService invoicePaymentToolService,
-      InvoicingProjectRepository invoicingProjectRepo) {
+      InvoicingProjectRepository invoicingProjectRepo,
+      AppAccountService appAccountService) {
     super(
         paymentModeService,
         moveService,
@@ -66,7 +68,8 @@ public class InvoicePaymentValidateProjectServiceImpl
         reconcileService,
         bankOrderCreateService,
         bankOrderService,
-        invoicePaymentToolService);
+        invoicePaymentToolService,
+        appAccountService);
     this.invoicingProjectRepo = invoicingProjectRepo;
   }
 
@@ -87,8 +90,8 @@ public class InvoicePaymentValidateProjectServiceImpl
             .fetchOne();
 
     if (invoicingProject != null) {
-      for (TeamTask teamTask : invoicingProject.getTeamTaskSet()) {
-        teamTask.setIsPaid(invoice.getHasPendingPayments());
+      for (ProjectTask projectTask : invoicingProject.getProjectTaskSet()) {
+        projectTask.setIsPaid(invoice.getHasPendingPayments());
       }
     }
   }

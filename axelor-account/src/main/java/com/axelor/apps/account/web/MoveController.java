@@ -150,18 +150,46 @@ public class MoveController {
     } else response.setFlash(I18n.get(IExceptionMessage.NO_MOVES_SELECTED));
   }
 
+  @SuppressWarnings("unchecked")
+  public void simulateMultipleMoves(ActionRequest request, ActionResponse response)
+      throws AxelorException {
+    List<Long> moveIds = (List<Long>) request.getContext().get("_ids");
+    if (moveIds != null && !moveIds.isEmpty()) {
+
+      List<? extends Move> moveList =
+          Beans.get(MoveRepository.class)
+              .all()
+              .filter(
+                  "self.id in ?1 AND self.statusSelect = ?2 AND self.journal.authorizeSimulatedMove = true",
+                  moveIds,
+                  MoveRepository.STATUS_NEW)
+              .order("date")
+              .fetch();
+
+      if (!moveList.isEmpty()) {
+        Beans.get(MoveService.class).getMoveValidateService().simulateMultiple(moveList);
+        response.setFlash(I18n.get(IExceptionMessage.MOVE_SIMULATION_OK));
+        response.setReload(true);
+      } else {
+        response.setFlash(I18n.get(IExceptionMessage.NO_NEW_MOVES_SELECTED));
+      }
+    } else {
+      response.setFlash(I18n.get(IExceptionMessage.NO_NEW_MOVES_SELECTED));
+    }
+  }
+
   public void deleteMove(ActionRequest request, ActionResponse response) throws AxelorException {
     try {
       Move move = request.getContext().asType(Move.class);
       MoveRepository moveRepository = Beans.get(MoveRepository.class);
       move = moveRepository.find(move.getId());
 
-      move = moveRepository.find(move.getId());
       this.removeOneMove(move, response);
 
       if (!move.getStatusSelect().equals(MoveRepository.STATUS_VALIDATED)) {
+
         response.setView(
-            ActionView.define("Moves")
+            ActionView.define(I18n.get("Moves"))
                 .model(Move.class.getName())
                 .add("grid", "move-grid")
                 .add("form", "move-form")
@@ -178,10 +206,11 @@ public class MoveController {
   protected void removeOneMove(Move move, ActionResponse response) throws Exception {
     MoveService moveService = Beans.get(MoveService.class);
 
-    if (move.getStatusSelect().equals(MoveRepository.STATUS_NEW)) {
+    if (move.getStatusSelect().equals(MoveRepository.STATUS_NEW)
+        || move.getStatusSelect().equals(MoveRepository.STATUS_SIMULATED)) {
       moveService.getMoveRemoveService().deleteMove(move);
       response.setFlash(I18n.get(IExceptionMessage.MOVE_REMOVED_OK));
-    } else if (move.getStatusSelect().equals(MoveRepository.STATUS_DAYBOOK)) {
+    } else if (move.getStatusSelect().equals(MoveRepository.STATUS_ACCOUNTED)) {
       moveService.getMoveRemoveService().archiveDaybookMove(move);
       response.setFlash(I18n.get(IExceptionMessage.MOVE_ARCHIVE_OK));
     } else if (move.getStatusSelect().equals(MoveRepository.STATUS_CANCELED)) {
@@ -199,11 +228,12 @@ public class MoveController {
             Beans.get(MoveRepository.class)
                 .all()
                 .filter(
-                    "self.id in ?1 AND self.statusSelect in (?2,?3,?4) AND (self.archived = false or self.archived = null)",
+                    "self.id in ?1 AND self.statusSelect in (?2,?3,?4,?5) AND (self.archived = false or self.archived = null)",
                     moveIds,
                     MoveRepository.STATUS_NEW,
-                    MoveRepository.STATUS_DAYBOOK,
-                    MoveRepository.STATUS_CANCELED)
+                    MoveRepository.STATUS_ACCOUNTED,
+                    MoveRepository.STATUS_CANCELED,
+                    MoveRepository.STATUS_SIMULATED)
                 .fetch();
         if (!moveList.isEmpty()) {
           if (moveList.size() == 1) {
@@ -260,7 +290,6 @@ public class MoveController {
           Long.valueOf(request.getContext().get("_accountingReportId").toString());
       actionViewBuilder.domain("self.move.accountingReport.id = " + accountingReportId);
     }
-
     response.setView(actionViewBuilder.map());
   }
 
@@ -270,7 +299,8 @@ public class MoveController {
     move = Beans.get(MoveRepository.class).find(move.getId());
 
     try {
-      if (move.getStatusSelect() == MoveRepository.STATUS_DAYBOOK) {
+      if (move.getStatusSelect() == MoveRepository.STATUS_ACCOUNTED
+          || move.getStatusSelect() == MoveRepository.STATUS_SIMULATED) {
         Beans.get(MoveService.class).getMoveValidateService().updateInDayBookMode(move);
         response.setReload(true);
       }
@@ -295,7 +325,8 @@ public class MoveController {
     Move move = request.getContext().asType(Move.class);
     if (move.getMoveLineList() != null
         && !move.getMoveLineList().isEmpty()
-        && move.getStatusSelect().equals(MoveRepository.STATUS_NEW)) {
+        && (move.getStatusSelect().equals(MoveRepository.STATUS_NEW)
+            || move.getStatusSelect().equals(MoveRepository.STATUS_SIMULATED))) {
       Beans.get(MoveService.class).getMoveLineService().autoTaxLineGenerate(move);
       response.setValue("moveLineList", move.getMoveLineList());
     }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <domain-models xmlns="http://axelor.com/xml/ns/domain-models" 
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-  xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_5.3.xsd">
+  xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_5.4.xsd">
   
   <module name="account" package="com.axelor.apps.account.db"/>
   
@@ -36,6 +36,10 @@
     <decimal name="currencyRate" title="Currency Rate" precision="20" scale="5" initParam="true"/>
     <decimal name="currencyAmount" title="Amount in Acc. currency" initParam="true"/>
     
+    <string name="postedNbr" title="Posted number"/>
+
+   <!--  Fixed asset fields -->
+    <many-to-one name="fixedAssetCategory" ref="com.axelor.apps.account.db.FixedAssetCategory" title="Fixed asset category" help="If this field is filled, once the move will change from Draft to Validated, a new fixed asset record will be generated based on this moveLine data and the selected category data"/>
     <!-- 	Field not displayed, used during the payment voucher input -->
 	<decimal name="maxAmountToReconcile" title="Max Amount to reconcile" />
 	<many-to-one name="paymentScheduleLine" ref="com.axelor.apps.account.db.PaymentScheduleLine" title="Payment Schedule line"/>
@@ -63,7 +67,9 @@
     
     <decimal name="taxRate"  scale="3" precision="20" readonly="true"/>
     <string name="taxCode" readonly="true"/>
-      
+
+    <boolean name="isSelectedBankReconciliation" title="Selected" default="false"/>
+
     <decimal name="taxAmount" scale="2" precision="20" title="Tax amount" readonly="true"/>
     <one-to-many name="taxPaymentMoveLineList" mappedBy="moveLine" ref="com.axelor.apps.account.db.TaxPaymentMoveLine"/>
 
@@ -71,6 +77,12 @@
                  ref="com.axelor.apps.account.db.ReconcileGroup"/>
 	
 	<date name="originDate" title="Origin date" initParam="true"/>
+	
+	<!-- DAS2 -->
+	<many-to-one name="serviceType" ref="ServiceType" title="Service type" readonly="true"/>
+    <string name="serviceTypeCode" title="Service type code" readonly="true"/>
+    <many-to-one name="das2Activity" ref="com.axelor.apps.account.db.Das2Activity" title="DAS2 activity" readonly="true"/>
+    <string name="das2ActivityName" title="DAS2 activity name" readonly="true"/>
 	
     <string name="name" title="Name" namecolumn="true">
     	<![CDATA[
@@ -92,8 +104,16 @@
 		else return BigDecimal.ZERO;
 	    ]]>
     </decimal>
+    
+    <many-to-one name="axis1AnalyticAccount" title="Cpte Ana. AXIS1" ref="com.axelor.apps.account.db.AnalyticAccount"/>
+	<many-to-one name="axis2AnalyticAccount" title="Cpte Ana. AXIS2" ref="com.axelor.apps.account.db.AnalyticAccount"/>
+	<many-to-one name="axis3AnalyticAccount" title="Cpte Ana. AXIS3" ref="com.axelor.apps.account.db.AnalyticAccount"/>
+	<many-to-one name="axis4AnalyticAccount" title="Cpte Ana. AXIS4" ref="com.axelor.apps.account.db.AnalyticAccount"/>
+	<many-to-one name="axis5AnalyticAccount" title="Cpte Ana. AXIS5" ref="com.axelor.apps.account.db.AnalyticAccount"/>
 
     <finder-method name="findByReconcileGroup" all="true" using="reconcileGroup"/>
+    <finder-method name="findByAccount" all="true" using="account"/>
+    <finder-method name="findByPostedNbr" all="true" using="postedNbr"/>
 
   	<extra-code><![CDATA[
 

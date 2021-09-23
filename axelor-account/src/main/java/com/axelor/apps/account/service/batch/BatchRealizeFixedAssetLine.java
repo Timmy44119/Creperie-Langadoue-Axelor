@@ -58,7 +58,7 @@ public class BatchRealizeFixedAssetLine extends AbstractBatch {
         && startDate != null
         && endDate != null
         && startDate.isBefore(endDate)) {
-      query += " AND self.depreciationDate < :endDate AND self.depreciationDate > :startDate";
+      query += " AND self.depreciationDate <= :endDate AND self.depreciationDate >= :startDate";
     } else {
       query += " AND self.depreciationDate < :dateNow";
     }
@@ -82,8 +82,10 @@ public class BatchRealizeFixedAssetLine extends AbstractBatch {
     for (FixedAssetLine fixedAssetLine : fixedAssetLineList) {
       try {
         fixedAssetLine = fixedAssetLineRepo.find(fixedAssetLine.getId());
-        if (fixedAssetLine.getFixedAsset().getStatusSelect() > FixedAssetRepository.STATUS_DRAFT) {
-          fixedAssetLineMoveService.realize(fixedAssetLine);
+        if (fixedAssetLine.getFixedAsset() != null
+            && fixedAssetLine.getFixedAsset().getStatusSelect()
+                > FixedAssetRepository.STATUS_DRAFT) {
+          fixedAssetLineMoveService.realize(fixedAssetLine, true, true);
           incrementDone();
         }
       } catch (Exception e) {

@@ -58,8 +58,9 @@ public class MenuBuilderService {
     ActionBuilder actionBuilder = builder.getActionBuilder();
     if (actionBuilder != null) {
       if (actionBuilder.getName() == null) {
-        actionBuilder.setName(menu.getName().replace("-", "."));
+        actionBuilder.setName(menu.getName());
       }
+      actionBuilder.setXmlId(builder.getXmlId());
       actionBuilder.setTitle(menu.getTitle());
       actionBuilder.setAppBuilder(builder.getAppBuilder());
       menu.setAction(actionBuilderService.build(actionBuilder));

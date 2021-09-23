@@ -38,6 +38,10 @@ import com.axelor.studio.db.repo.StudioWkfNodeRepo;
 import com.axelor.studio.db.repo.StudioWkfRepository;
 import com.axelor.studio.db.repo.WkfNodeRepository;
 import com.axelor.studio.db.repo.WkfRepository;
+import com.axelor.studio.service.AppLoaderService;
+import com.axelor.studio.service.AppLoaderServiceImpl;
+import com.axelor.studio.service.mapper.MapperScriptGeneratorService;
+import com.axelor.studio.service.mapper.MapperScriptGeneratorServiceImpl;
 
 public class StudioModule extends AxelorModule {
 
@@ -53,5 +57,7 @@ public class StudioModule extends AxelorModule {
     bind(MetaJsonModelRepository.class).to(MetaJsonModelRepo.class);
     bind(WkfNodeRepository.class).to(StudioWkfNodeRepo.class);
     bind(SelectionBuilderRepository.class).to(SelectionBuilderRepo.class);
+    bind(MapperScriptGeneratorService.class).to(MapperScriptGeneratorServiceImpl.class);
+    bind(AppLoaderService.class).to(AppLoaderServiceImpl.class);
   }
 }

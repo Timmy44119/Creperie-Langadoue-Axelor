@@ -20,11 +20,12 @@ package com.axelor.apps.supplychain.service;
 import com.axelor.apps.account.db.AnalyticDistributionTemplate;
 import com.axelor.apps.account.db.AnalyticMoveLine;
 import com.axelor.apps.account.db.BudgetDistribution;
+import com.axelor.apps.account.db.repo.AccountConfigRepository;
 import com.axelor.apps.account.db.repo.AnalyticMoveLineRepository;
 import com.axelor.apps.account.service.AnalyticMoveLineService;
 import com.axelor.apps.account.service.app.AppAccountService;
+import com.axelor.apps.account.service.config.AccountConfigService;
 import com.axelor.apps.base.db.Unit;
-import com.axelor.apps.base.db.repo.AppAccountRepository;
 import com.axelor.apps.base.service.UnitConversionService;
 import com.axelor.apps.purchase.db.PurchaseOrder;
 import com.axelor.apps.purchase.db.PurchaseOrderLine;
@@ -54,6 +55,8 @@ public class PurchaseOrderLineServiceSupplychainImpl extends PurchaseOrderLineSe
 
   @Inject protected AppAccountService appAccountService;
 
+  @Inject protected AccountConfigService accountConfigService;
+
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public PurchaseOrderLine fill(PurchaseOrderLine purchaseOrderLine, PurchaseOrder purchaseOrder)
@@ -76,7 +79,7 @@ public class PurchaseOrderLineServiceSupplychainImpl extends PurchaseOrderLineSe
     Unit unit = null;
     BigDecimal qty = BigDecimal.ZERO;
 
-    if (saleOrderLine.getTypeSelect() != SaleOrderLineRepository.TYPE_TITLE) {
+    if (saleOrderLine.getTypeSelect() == SaleOrderLineRepository.TYPE_NORMAL) {
 
       if (saleOrderLine.getProduct() != null) {
         unit = saleOrderLine.getProduct().getPurchasesUnit();
@@ -102,10 +105,12 @@ public class PurchaseOrderLineServiceSupplychainImpl extends PurchaseOrderLineSe
   }
 
   public PurchaseOrderLine getAndComputeAnalyticDistribution(
-      PurchaseOrderLine purchaseOrderLine, PurchaseOrder purchaseOrder) {
+      PurchaseOrderLine purchaseOrderLine, PurchaseOrder purchaseOrder) throws AxelorException {
 
-    if (appAccountService.getAppAccount().getAnalyticDistributionTypeSelect()
-        == AppAccountRepository.DISTRIBUTION_TYPE_FREE) {
+    if (accountConfigService
+            .getAccountConfig(purchaseOrder.getCompany())
+            .getAnalyticDistributionTypeSelect()
+        == AccountConfigRepository.DISTRIBUTION_TYPE_FREE) {
       return purchaseOrderLine;
     }
 

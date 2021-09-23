@@ -25,12 +25,14 @@ import com.axelor.apps.account.db.repo.InvoiceRepository;
 import com.axelor.apps.account.service.AccountManagementAccountService;
 import com.axelor.apps.account.service.AnalyticMoveLineService;
 import com.axelor.apps.account.service.app.AppAccountService;
+import com.axelor.apps.account.service.config.AccountConfigService;
 import com.axelor.apps.account.service.invoice.InvoiceLineServiceImpl;
 import com.axelor.apps.base.db.Product;
 import com.axelor.apps.base.db.Unit;
 import com.axelor.apps.base.service.CurrencyService;
 import com.axelor.apps.base.service.PriceListService;
 import com.axelor.apps.base.service.ProductCompanyService;
+import com.axelor.apps.base.service.app.AppBaseService;
 import com.axelor.apps.purchase.db.PurchaseOrderLine;
 import com.axelor.apps.purchase.service.PurchaseProductService;
 import com.axelor.apps.purchase.service.SupplierCatalogService;
@@ -58,15 +60,20 @@ public class InvoiceLineSupplychainService extends InvoiceLineServiceImpl {
       AnalyticMoveLineService analyticMoveLineService,
       AccountManagementAccountService accountManagementAccountService,
       PurchaseProductService purchaseProductService,
-      ProductCompanyService productCompanyService) {
-
+      ProductCompanyService productCompanyService,
+      InvoiceLineRepository invoiceLineRepo,
+      AppBaseService appBaseService,
+      AccountConfigService accountConfigService) {
     super(
         currencyService,
         priceListService,
         appAccountService,
         analyticMoveLineService,
         accountManagementAccountService,
-        productCompanyService);
+        productCompanyService,
+        invoiceLineRepo,
+        appBaseService,
+        accountConfigService);
     this.purchaseProductService = purchaseProductService;
   }
 
