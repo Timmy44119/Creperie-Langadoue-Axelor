@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <domain-models xmlns="http://axelor.com/xml/ns/domain-models"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_5.3.xsd">
+  xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_5.4.xsd">
 
   <module name="marketing" package="com.axelor.apps.marketing.db"/>
 
@@ -44,6 +44,7 @@
     <many-to-one name="partnerReminderTemplate" ref="com.axelor.apps.message.db.Template" title="Contact/Partner reminder template"/>
     <many-to-one name="leadReminderTemplate" ref="com.axelor.apps.message.db.Template" title="Lead reminder template"/>
     <boolean name="isAllowEditingOfTargets" title="Allow the editing of the targets" default="true"/>
+    <string name="description" title="Description" large="true"/>
 
   </entity>
 

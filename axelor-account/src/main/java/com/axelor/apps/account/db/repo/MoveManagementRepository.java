@@ -53,7 +53,8 @@ public class MoveManagementRepository extends MoveRepository {
     } catch (AxelorException e) {
       throw new PersistenceException(e);
     }
-    copy.setStatusSelect(STATUS_NEW);
+    int statusSelect = entity.getStatusSelect() == STATUS_SIMULATED ? STATUS_SIMULATED : STATUS_NEW;
+    copy.setStatusSelect(statusSelect);
     copy.setReference(null);
     copy.setExportNumber(null);
     copy.setExportDate(null);
@@ -91,7 +92,8 @@ public class MoveManagementRepository extends MoveRepository {
   @Override
   public Move save(Move move) {
     try {
-      if (move.getStatusSelect() == MoveRepository.STATUS_DAYBOOK) {
+      if (move.getStatusSelect() == MoveRepository.STATUS_ACCOUNTED
+          || move.getStatusSelect() == MoveRepository.STATUS_SIMULATED) {
         Beans.get(MoveValidateService.class).checkPreconditions(move);
       }
 
@@ -117,8 +119,8 @@ public class MoveManagementRepository extends MoveRepository {
 
   @Override
   public void remove(Move entity) {
-
-    if (!entity.getStatusSelect().equals(MoveRepository.STATUS_NEW)) {
+    if (!entity.getStatusSelect().equals(MoveRepository.STATUS_NEW)
+        && !entity.getStatusSelect().equals(MoveRepository.STATUS_SIMULATED)) {
       try {
         throw new AxelorException(
             TraceBackRepository.CATEGORY_CONFIGURATION_ERROR,

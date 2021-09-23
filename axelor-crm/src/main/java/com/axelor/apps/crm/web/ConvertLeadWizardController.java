@@ -26,6 +26,7 @@ import com.axelor.apps.base.db.repo.PartnerRepository;
 import com.axelor.apps.base.service.app.AppBaseService;
 import com.axelor.apps.crm.db.Lead;
 import com.axelor.apps.crm.db.repo.LeadRepository;
+import com.axelor.apps.crm.db.repo.OpportunityTypeRepository;
 import com.axelor.apps.crm.exception.IExceptionMessage;
 import com.axelor.apps.crm.service.ConvertLeadWizardService;
 import com.axelor.apps.crm.service.LeadService;
@@ -202,7 +203,6 @@ public class ConvertLeadWizardController {
     response.setAttr("industrySector", "value", lead.getIndustrySector());
     response.setAttr("titleSelect", "value", lead.getTitleSelect());
     response.setAttr("emailAddress", "value", lead.getEmailAddress());
-    response.setAttr("fax", "value", lead.getFax());
     response.setAttr("mobilePhone", "value", lead.getMobilePhone());
     response.setAttr("fixedPhone", "value", lead.getFixedPhone());
     response.setAttr("webSite", "value", lead.getWebSite());
@@ -210,7 +210,19 @@ public class ConvertLeadWizardController {
     response.setAttr("department", "value", lead.getDepartment());
     response.setAttr("team", "value", lead.getTeam());
     response.setAttr("user", "value", lead.getUser());
-    response.setAttr("isProspect", "value", true);
+    if (lead.getUser() != null) {
+      if (lead.getUser().getActiveCompany().getDefaultPartnerCategorySelect()
+          == CompanyRepository.CATEGORY_CUSTOMER) {
+        response.setAttr("isCustomer", "value", true);
+      } else if (lead.getUser().getActiveCompany().getDefaultPartnerCategorySelect()
+          == CompanyRepository.CATEGORY_SUPPLIER) {
+        response.setAttr("isSupplier", "value", true);
+      } else {
+        response.setAttr("isProspect", "value", true);
+      }
+    } else {
+      response.setAttr("isProspect", "value", true);
+    }
     response.setAttr("partnerTypeSelect", "value", "1");
     response.setAttr("language", "value", appBase.getDefaultPartnerLanguage());
     response.setAttr("nbrEmployees", "value", 0);
@@ -239,7 +251,6 @@ public class ConvertLeadWizardController {
     response.setAttr("name", "value", lead.getName());
     response.setAttr("titleSelect", "value", lead.getTitleSelect());
     response.setAttr("emailAddress", "value", lead.getEmailAddress());
-    response.setAttr("fax", "value", lead.getFax());
     response.setAttr("mobilePhone", "value", lead.getMobilePhone());
     response.setAttr("fixedPhone", "value", lead.getFixedPhone());
     response.setAttr("user", "value", lead.getUser());
@@ -253,8 +264,11 @@ public class ConvertLeadWizardController {
     Lead lead = findLead(request);
 
     AppBase appBase = Beans.get(AppBaseService.class).getAppBase();
+    response.setAttr(
+        "opportunityType",
+        "value",
+        Beans.get(OpportunityTypeRepository.class).findByCode("EXLEAD"));
     response.setAttr("lead", "value", lead);
-    response.setAttr("amount", "value", lead.getEstimatedBudget());
     response.setAttr("customerDescription", "value", lead.getDescription());
     response.setAttr("source", "value", lead.getSource());
     response.setAttr("partner", "value", lead.getPartner());
